@@ -20,7 +20,7 @@ class Item(Resource): #'Student' will inherit from 'Resource'
         items.append(item)
         return item, 201
 
-#Passing in 'Student' tells 'Api' that 'Student' is accessible in the API.
+#Passing in 'Item' tells 'Api' that 'Student' is accessible in the API.
 api.add_resource(Item , '/item/<string:name>')
 
 app.run(port=5000)
