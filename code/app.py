@@ -1,14 +1,19 @@
 from flask import Flask, request
 from flask_restful import Resource, Api #Resource is just a 'thing' that our API can handle with or return
-
+from flask_jwt import JWT, jwt_required #jwt_required is a decorator
+from security import authenticate , identity #import the two functions from security.py
 #Flask-RESTful is an extension for Flask that adds support for quickly building REST APIs.
 
 app = Flask(__name__)
+app.secret_key = 'zain'
 api = Api(app)
+
+jwt = JWT(app , authenticate , identity )
 
 items = [] #Contains a dictionary for each item
 
 class Item(Resource): #'Item' will inherit from 'Resource'
+    @jwt_required() #You put this as a decorator. The function below will only run once you have a token.
     def get(self , name): #This resource can only be accessed with 'get' ... if you want 'post' add a post method
         item = next( filter(lambda x : x['name'] == name , items ) , None ) # This returns a filter object, so we can use 'next' to
         return item, 200 if item is not None else 404                       # get the first found item. We can called 'next' many
@@ -22,6 +27,7 @@ class Item(Resource): #'Item' will inherit from 'Resource'
             return { 'message' : 'Item: {} already exists.'.format(name) }, 400
         else:
             data = request.get_json() #When someone sends a request, it is in the 'request' object
+            print("data is {}".format(data))
             item = { 'name' : name , 'price' : data['price'] }
             items.append(item)
             return item, 201
