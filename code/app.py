@@ -1,5 +1,5 @@
 from flask import Flask, request
-from flask_restful import Resource, Api #Resource is just a 'thing' that our API can handle with or return
+from flask_restful import Resource, Api, reqparse #Resource is just a 'thing' that our API can handle with or return
 from flask_jwt import JWT, jwt_required, current_identity #jwt_required is a decorator
 from security import authenticate , identity #import the two functions from security.py
 #Flask-RESTful is an extension for Flask that adds support for quickly building REST APIs.
@@ -40,10 +40,20 @@ class Item(Resource): #'Item' will inherit from 'Resource'
 
     #In REST, 'put' methods are idempotent. No matter how many times called, it will never add anything extra to 'items'.
     def put(self , name):
-        data = request.get_json()
+        parser = reqparse.RequestParser()
+        parser.add_argument('price' , type=float , required=True ,
+            help="This field cannot be left blank!") #This ensures that whatever the user requests is a float, and is
+                                                     #actually present.
+
+        data = parser.parse_args() #This will parse the arguments coming through the payload in the line above.
+
+        #Whats cool is that data will only have a 'price' field. Even if the user passes another key to 'PUT' like
+        #'name' ... it will not be a key in the 'data' dictionary because our parser does not expect anything but
+        #'price'.
+
         item = next( filter( lambda x: x['name'] == name , items ) , None )
         if item is None:
-            item = {'name' : name , price: data['price'] }
+            item = {'name' : name , 'price': data['price'] }
             items.append(item)
         else:
             item.update(data) #The update function will replace the dictionary in the list with 'data'.
