@@ -13,7 +13,7 @@ jwt = JWT(app , authenticate , identity )
 items = [] #Contains a dictionary for each item
 
 class Item(Resource): #'Item' will inherit from 'Resource'
-    @jwt_required() #You put this as a decorator. The function below will only run once you have a token.
+    #@jwt_required() #You put this as a decorator. The function below will only run once you have a token.
     def get(self , name): #This resource can only be accessed with 'get' ... if you want 'post' add a post method
         print("Username is: {}".format(current_identity.username))
         item = next( filter(lambda x : x['name'] == name , items ) , None ) # This returns a filter object, so we can use 'next' to
@@ -32,6 +32,22 @@ class Item(Resource): #'Item' will inherit from 'Resource'
             item = { 'name' : name , 'price' : data['price'] }
             items.append(item)
             return item, 201
+
+    def delete(self , name):
+        global items
+        items = list(filter(lambda x: x['name'] != name , items))
+        return {'message': 'Item deleted'}
+
+    #In REST, 'put' methods are idempotent. No matter how many times called, it will never add anything extra to 'items'.
+    def put(self , name):
+        data = request.get_json()
+        item = next( filter( lambda x: x['name'] == name , items ) , None )
+        if item is None:
+            item = {'name' : name , price: data['price'] }
+            items.append(item)
+        else:
+            item.update(data) #The update function will replace the dictionary in the list with 'data'.
+        return item
 
 
 class ItemList(Resource):
