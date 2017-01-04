@@ -13,7 +13,7 @@ jwt = JWT(app , authenticate , identity )
 items = [] #Contains a dictionary for each item
 
 class Item(Resource): #'Item' will inherit from 'Resource'
-    #@jwt_required() #You put this as a decorator. The function below will only run once you have a token.
+    @jwt_required() #You put this as a decorator. The function below will only run once you have a token.
     def get(self , name): #This resource can only be accessed with 'get' ... if you want 'post' add a post method
         print("Username is: {}".format(current_identity.username))
         item = next( filter(lambda x : x['name'] == name , items ) , None ) # This returns a filter object, so we can use 'next' to
