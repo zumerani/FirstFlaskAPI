@@ -38,7 +38,7 @@ class Item(Resource): #'Item' will inherit from 'Resource'
         items = list(filter(lambda x: x['name'] != name , items))
         return {'message': 'Item deleted'}
 
-    #In REST, 'put' methods are idempotent. No matter how many times called, it will never add anything extra to 'items'.
+    #In REST, 'put' methods are idempotent -- No matter how many times called, it will never add anything extra to 'items'.
     def put(self , name):
         parser = reqparse.RequestParser()
         parser.add_argument('price' , type=float , required=True ,
