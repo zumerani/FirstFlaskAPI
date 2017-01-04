@@ -2,6 +2,8 @@ from flask import Flask, request
 from flask_restful import Resource, Api, reqparse #Resource is just a 'thing' that our API can handle with or return
 from flask_jwt import JWT, jwt_required, current_identity #jwt_required is a decorator
 from security import authenticate , identity #import the two functions from security.py
+from user import UserRegister
+
 #Flask-RESTful is an extension for Flask that adds support for quickly building REST APIs.
 
 app = Flask(__name__)
@@ -67,5 +69,6 @@ class ItemList(Resource):
 #Passing in 'Item' tells 'Api' that 'Student' is accessible in the API.
 api.add_resource(Item , '/item/<string:name>')
 api.add_resource(ItemList , '/items')
+api.add_resource(UserRegister , '/register')
 
 app.run(port=5000 , debug=True) #debug=True helps you debug easier with HTML pages
