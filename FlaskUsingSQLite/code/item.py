@@ -41,6 +41,15 @@ class Item(Resource): #'Item' will inherit from 'Resource'
         data = Item.parser.parse_args()
         item = {'name': name , 'price': data['price']}
 
+        try:
+            self.insert(item)
+        except: #If we fail upon insert^ return the error message below ... similar to try and catch
+            return {"message:" "An error occured during insertion." } , 500 #500 is internal server error
+
+        return item , 201
+
+    @classmethod
+    def insert(clas , item):
         connection = sqlite3.connect('data.db')
         cursor = connection.cursor()
 
@@ -50,33 +59,48 @@ class Item(Resource): #'Item' will inherit from 'Resource'
         connection.commit()
         connection.close()
 
-        return item , 201
-
     def delete(self , name):
-        global items
-        items = list(filter(lambda x: x['name'] != name , items))
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+
+        query = "DELETE FROM items WHERE name=?"
+        cursor.execute(query , (name,) )
+
+        connection.commit()
+        connection.close()
         return {'message': 'Item deleted'}
 
     #In REST, 'put' methods are idempotent -- No matter how many times called, it will never add anything extra to 'items'.
     def put(self , name):
-        parser = reqparse.RequestParser()
-        parser.add_argument('price' , type=float , required=True ,
-            help="This field cannot be left blank!") #This ensures that whatever the user requests is a float, and is
-                                                     #actually present.
 
-        data = parser.parse_args() #This will parse the arguments coming through the payload in the line above.
 
-        #Whats cool is that data will only have a 'price' field. Even if the user passes another key to 'PUT' like
-        #'name' ... it will not be a key in the 'data' dictionary because our parser does not expect anything but
-        #'price'.
+        data = Item.parser.parse_args() #This will parse the arguments coming through the payload in the line above.
 
-        item = next( filter( lambda x: x['name'] == name , items ) , None )
+        item = self.find_by_name(name)
+        updatedItem = {'name' : name , 'price' : data['price'] }
+
         if item is None:
-            item = {'name' : name , 'price': data['price'] }
-            items.append(item)
+            try:
+                self.insert(updatedItem)
+            except:
+                return {"message": "An error occurred inserting the item" } , 500
         else:
-            item.update(data) #The update function will replace the dictionary in the list with 'data'.
-        return item
+            try:
+                self.update(updatedItem)
+            except:
+                return {"message" : "An error occurred updating the item." } , 500
+        return updatedItem
+
+    @classmethod
+    def update(cls , item):
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+
+        query = "UPDATE items SET price=? WHERE name=?"
+        cursor.execute(query , ( item['price'] , item['name'] ) )
+
+        connection.commit()
+        connection.close()
 
 
 class ItemList(Resource):
