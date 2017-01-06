@@ -59,5 +59,5 @@ class Item(Resource): #'Item' will inherit from 'Resource'
 
 class ItemList(Resource):
     def get(self):
-        return {'items' : [ item.json() for item in ItemMode.query.all() ] } }
+        return {'items' : [ item.json() for item in ItemModel.query.all() ] } 
         # ^For each ItemModel from query.all(), convert it to JSON.

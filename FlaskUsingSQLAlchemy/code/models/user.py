@@ -21,7 +21,7 @@ class UserModel(db.Model): #Extends db.Model
 
     @classmethod
     def find_by_username(cls , username):
-        return cls.query.filter_by(username=username)).first() #Grabs the first row -- Then SQLAlchemy converts it to a UserModel type.
+        return cls.query.filter_by(username=username).first() #Grabs the first row -- Then SQLAlchemy converts it to a UserModel type.
 
     @classmethod
     def find_by_id(cls , _id):
