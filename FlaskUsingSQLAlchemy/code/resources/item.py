@@ -1,5 +1,4 @@
 from flask_restful import Resource , reqparse
-import sqlite3
 from flask_jwt import jwt_required , current_identity
 from models.item import ItemModel
 
@@ -28,7 +27,7 @@ class Item(Resource): #'Item' will inherit from 'Resource'
         item = ItemModel( name , data['price'] )
 
         try:
-            item.insert()
+            item.save_to_db()
         except: #If we fail upon insert^ return the error message below ... similar to try and catch
             return {"message": "An error occured during insertion." } , 500 #500 is internal server error
 
@@ -36,48 +35,29 @@ class Item(Resource): #'Item' will inherit from 'Resource'
 
 
     def delete(self , name):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
+        item = ItemModel.find_by_name(name)
+        if item:
+            item.delete_from_db()
 
-        query = "DELETE FROM items WHERE name=?"
-        cursor.execute(query , (name,) )
-
-        connection.commit()
-        connection.close()
-        return {'message': 'Item deleted'}
+        return {"message" : "Item deleted"}
 
     #In REST, 'put' methods are idempotent -- No matter how many times called, it will never add anything extra to 'items'.
     def put(self , name):
         data = Item.parser.parse_args() #This will parse the arguments coming through the payload in the line above.
 
         item = ItemModel.find_by_name(name)
-        updatedItem = ItemModel( name , data['price'] )
 
         if item is None:
-            try:
-                updatedItem.insert()
-            except:
-                return {"message": "An error occurred inserting the item" } , 500
+            item = ItemModel(name , data['price'] ) #Create a new item
         else:
-            try:
-                updatedItem.update()
-            except:
-                return {"message" : "An error occurred updating the item." } , 500
+            item.price = data['price'] #Item found, update price
 
-        return updatedItem.json()
+        item.save_to_db() #Either way, found or not, we save to db
+
+        return item.json()
 
 
 class ItemList(Resource):
     def get(self):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-
-        query = "SELECT * FROM items"
-        result = cursor.execute( query )
-        items = []
-        for row in result:
-            items.append( {'name' : row[0] , 'price' : row[1] } )
-
-        connection.close()
-
-        return {'items' : items } #To make it JSON format
+        return {'items' : [ item.json() for item in ItemMode.query.all() ] } }
+        # ^For each ItemModel from query.all(), convert it to JSON.

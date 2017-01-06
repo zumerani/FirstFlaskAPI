@@ -1,45 +1,32 @@
-import sqlite3
+from db import db
 
-class UserModel:
-    def __init__(self , _id , username , password):
-        self.id = _id
+class UserModel(db.Model): #Extends db.Model
+    __tablename__ = "users" #Tells SQLAlchemy what the name of our table is
+
+    ##Note: The following three (id, user, pass) need to match with whatever
+    ##you are passing in the constructor!! (__init__)
+
+    id = db.Column(db.Integer , primary_key = True ) #Tells SQLAlchemy that there is a column called id
+                                                     #Primary Key makes it unique.
+                                                     #Whenever we create a UserModel through SQLAlchemy,
+                                                     #an ID is automatically generated and given to us.
+
+    username = db.Column(db.String(80)) #80 characters maximum
+    password = db.Column(db.String(80))
+
+    def __init__(self , username , password):
+        #No need to specify ID, SQLAlchemy autmoatically does it
         self.username = username
         self.password = password
 
     @classmethod
     def find_by_username(cls , username):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-
-        query = "SELECT * FROM users WHERE username=?"
-        result = cursor.execute( query , (username,) ) #'username' fills the ? above.
-                                                       #Note: Parameters have to be tuple (single tuple
-                                                       #is the username followed by a ',').
-        row = result.fetchone()
-        if row is not None:
-            user = cls( row[0] , row[1] , row[2] ) #0, 1, 2 are columns 0, 1, and 2.
-            #user = User( *row ) -- Equivalent to above. *row grabs all.
-        else:
-            user = None
-
-        connection.close()
-        return user
+        return cls.query.filter_by(username=username)).first() #Grabs the first row -- Then SQLAlchemy converts it to a UserModel type.
 
     @classmethod
     def find_by_id(cls , _id):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
+        return cls.query.filter_by(id=_id)
 
-        query = "SELECT * FROM users WHERE id=?"
-        result = cursor.execute( query , (_id,) ) #'username' fills the ? above.
-                                                       #Note: Parameters have to be tuple (single tuple
-                                                       #is the username followed by a ',').
-        row = result.fetchone()
-        if row is not None:
-            user = cls( row[0] , row[1] , row[2] ) #0, 1, 2 are columns 0, 1, and 2.
-            #user = User( *row ) -- Equivalent to above. *row grabs all.
-        else:
-            user = None
-
-        connection.close()
-        return user
+    def save_to_db(self):
+        db.session.add(self) #Adds 'UserModel' to session container
+        db.session.commit()
