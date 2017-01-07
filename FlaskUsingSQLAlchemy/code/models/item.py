@@ -8,9 +8,15 @@ class ItemModel(db.Model): #Extends db.Model
     name = db.Column( db.String(80) )
     price = db.Column( db.Float(precision=2) ) #precision is places after decimal point
 
-    def __init__(self , name , price):
+    store_id = db.Column( db.Integer , db.ForeignKey('stores.id'))
+    store = db.relationship('StoreModel') #This is a 'JOIN' between items and store tables
+                                          #Now each 'ItemModel' has a property called 'store'
+                                          #that is a 'StoreModel' type that matches the store_id^
+
+    def __init__(self , name , price , store_id):
         self.name = name
         self.price = price
+        self.store_id = store_id
 
     def json(self): #Returns JSON representation of 'ItemModel'
         return {'name' : self.name , 'price' : self.price }

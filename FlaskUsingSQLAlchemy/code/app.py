@@ -7,6 +7,7 @@ from flask_jwt import JWT
 from security import authenticate , identity
 from resources.user import UserRegister
 from resources.item import Item, ItemList
+from resources.store import Store , StoreList
 
 #Flask-RESTful is an extension for Flask that adds support for quickly building REST APIs.
 
@@ -16,6 +17,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False #Turns off flask_sqlalchemy
 app.secret_key = 'zain'
 api = Api(app)
 
+@app.before_first_request
+def create_tables(): #Runs the method below ONLY when we have the first request
+    db.create_all() #This goes through our model .py files and creates a table based on
+                    #__tablename__ and the Column representations. So importing the correct
+                    #models/files is very important.
+
 jwt = JWT(app , authenticate , identity )
 
 
@@ -23,6 +30,8 @@ jwt = JWT(app , authenticate , identity )
 api.add_resource(Item , '/item/<string:name>')
 api.add_resource(ItemList , '/items')
 api.add_resource(UserRegister , '/register')
+api.add_resource(Store , '/store/<string:name>')
+api.add_resource(StoreList , '/stores')
 
 #In Python, when something is run, it assigns '__main__' to it so we do the if-statement
 #below because when we run a file we want to make sure it is app.py.

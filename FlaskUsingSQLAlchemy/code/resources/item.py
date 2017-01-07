@@ -11,6 +11,12 @@ class Item(Resource): #'Item' will inherit from 'Resource'
         help="This field cannot be left blank!"
     )
 
+    parser.add_argument('store_id',
+        type=int,
+        required=True,
+        help="Every store needs a store ID."
+    )
+
     @jwt_required() #You put this as a decorator. The function below will only run once you have a token.
     def get(self , name):
         item = ItemModel.find_by_name(name)
@@ -24,7 +30,7 @@ class Item(Resource): #'Item' will inherit from 'Resource'
             return {'message': 'An item with the name {} already exists'.format(name) }
 
         data = Item.parser.parse_args()
-        item = ItemModel( name , data['price'] )
+        item = ItemModel( name , data['price'] , data['store_id'] )
 
         try:
             item.save_to_db()
@@ -48,7 +54,7 @@ class Item(Resource): #'Item' will inherit from 'Resource'
         item = ItemModel.find_by_name(name)
 
         if item is None:
-            item = ItemModel(name , data['price'] ) #Create a new item
+            item = ItemModel(name , data['price'] , data['store_id'] ) #Create a new item
         else:
             item.price = data['price'] #Item found, update price
 
@@ -59,5 +65,5 @@ class Item(Resource): #'Item' will inherit from 'Resource'
 
 class ItemList(Resource):
     def get(self):
-        return {'items' : [ item.json() for item in ItemModel.query.all() ] } 
+        return {'items' : [ item.json() for item in ItemModel.query.all() ] }
         # ^For each ItemModel from query.all(), convert it to JSON.
