@@ -1,3 +1,3 @@
-# FirstFlaskAPI
+# FlaskProjects
 
-This is a small project to learn the Flask Web Framework. The project involves building an API (app.py) that has the ability to create, read, delete, and update items in a list. The list is local, and is not saved anywhere externally.
+This repository is devoted to building APIs using Flask. The goal was to learn how to use Flask as well as databases like SQLite and PostgreSQL using SQLAlchemy.
